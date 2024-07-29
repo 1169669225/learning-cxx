@@ -18,14 +18,27 @@ struct TaggedUnion {
 };
 
 // TODO: 将这个函数模板化用于 sigmoid_dyn
-float sigmoid(float x) {
+template<class T>
+T sigmoid(T x) {
     return 1 / (1 + std::exp(-x));
 }
 
 TaggedUnion sigmoid_dyn(TaggedUnion x) {
     TaggedUnion ans{x.type};
+
     // TODO: 根据 type 调用 sigmoid
+    if (ans.type == DataType::Float) {
+        ans.f = sigmoid(x.f);
+    } else {
+        ans.d = sigmoid(x.d);
+    }
+
     return ans;
+}
+
+template<class T>
+bool equal(T a, T b) {
+    return fabs((double)(a - b)) < 1e-9;
 }
 
 // ---- 不要修改以下代码 ----
@@ -34,12 +47,12 @@ int main(int argc, char **argv) {
     xf.f = 5.f;
     auto yf = sigmoid_dyn(xf);
     ASSERT(yf.type == DataType::Float, "type mismatch");
-    ASSERT(yf.f == 1 / (1 + std::exp(-5.f)), "sigmoid float");
+    ASSERT(equal(yf.f, 1 / (1 + std::exp(-5.f))), "sigmoid float");
 
     TaggedUnion xd{DataType::Double};
     xd.d = 5.0;
     auto yd = sigmoid_dyn(xd);
     ASSERT(yd.type == DataType::Double, "type mismatch");
-    ASSERT(yd.d == 1 / (1 + std::exp(-5.0)), "sigmoid double");
+    ASSERT(equal(yd.d, 1 / (1 + std::exp(-5.0))), "sigmoid double");
     return 0;
 }
